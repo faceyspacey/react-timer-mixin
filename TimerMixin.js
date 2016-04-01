@@ -88,4 +88,16 @@ var TimerMixin = {
   cancelAnimationFrame: _cancelAnimationFrame,
 };
 
+
+
 module.exports = TimerMixin;
+
+module.exports.Timer function (Component) {
+  class TimerComponent extends Component {
+    //note within your own componentWillUnmount method you will need to call super()
+  }
+
+  Object.assign(TimerComponent.prototype, TimerMixin);
+
+  return TimerComponent;
+};
