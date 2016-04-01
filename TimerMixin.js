@@ -92,7 +92,7 @@ var TimerMixin = {
 
 module.exports = TimerMixin;
 
-module.exports.Timer function (Component) {
+module.exports.Timer = function (Component) {
   class TimerComponent extends Component {
     //note within your own componentWillUnmount method you will need to call super()
   }
