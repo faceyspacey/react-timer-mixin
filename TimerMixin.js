@@ -55,19 +55,6 @@ var _rafs = 'TimerMixin_rafs';
 var _cancelAnimationFrame = clearer(GLOBAL.cancelAnimationFrame, _rafs);
 var _requestAnimationFrame = setter(GLOBAL.requestAnimationFrame, _cancelAnimationFrame, _rafs);
 
-var TimerMixin = {
-  setTimeout: _setTimeout,
-  clearTimeout: _clearTimeout,
-
-  setInterval: _setInterval,
-  clearInterval: _clearInterval,
-
-  setImmediate: _setImmediate,
-  clearImmediate: _clearImmediate,
-
-  requestAnimationFrame: _requestAnimationFrame,
-  cancelAnimationFrame: _cancelAnimationFrame,
-};
 
 var componentWillUnmount = function() {
   this[_timeouts] && this[_timeouts].forEach(function(id) {
@@ -88,8 +75,27 @@ var componentWillUnmount = function() {
   this[_rafs] = null;
 };
 
+var TimerMixin = {
+  componentWillUnmount: componentWillUnmount,
+  setTimeout: _setTimeout,
+  clearTimeout: _clearTimeout,
 
-module.exports = function Timer(Component) {
+  setInterval: _setInterval,
+  clearInterval: _clearInterval,
+
+  setImmediate: _setImmediate,
+  clearImmediate: _clearImmediate,
+
+  requestAnimationFrame: _requestAnimationFrame,
+  cancelAnimationFrame: _cancelAnimationFrame,
+};
+
+
+module.exports = Object.assign({
+  componentWillUnmount: componentWillUnmount,
+}, TimerMixin);
+
+module.exports.Timer = function Timer(Component) {
   class TimerComponent extends Component {
     constructor(...args) {
       super(...args);
