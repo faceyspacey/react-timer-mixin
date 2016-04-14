@@ -89,9 +89,7 @@ var componentWillUnmount = function() {
 };
 
 
-module.exports = TimerMixin;
-
-module.exports.Timer = function (Component) {
+module.exports = function Timer(Component) {
   class TimerComponent extends Component {
     constructor(...args) {
       super(...args);
