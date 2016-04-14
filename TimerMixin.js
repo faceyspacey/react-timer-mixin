@@ -56,25 +56,6 @@ var _cancelAnimationFrame = clearer(GLOBAL.cancelAnimationFrame, _rafs);
 var _requestAnimationFrame = setter(GLOBAL.requestAnimationFrame, _cancelAnimationFrame, _rafs);
 
 var TimerMixin = {
-  componentWillUnmount: function() {
-    this[_timeouts] && this[_timeouts].forEach(function(id) {
-      GLOBAL.clearTimeout(id);
-    });
-    this[_timeouts] = null;
-    this[_intervals] && this[_intervals].forEach(function(id) {
-      GLOBAL.clearInterval(id);
-    });
-    this[_intervals] = null;
-    this[_immediates] && this[_immediates].forEach(function(id) {
-      GLOBAL.clearImmediate(id);
-    });
-    this[_immediates] = null;
-    this[_rafs] && this[_rafs].forEach(function(id) {
-      GLOBAL.cancelAnimationFrame(id);
-    });
-    this[_rafs] = null;
-  },
-
   setTimeout: _setTimeout,
   clearTimeout: _clearTimeout,
 
@@ -88,13 +69,50 @@ var TimerMixin = {
   cancelAnimationFrame: _cancelAnimationFrame,
 };
 
+var componentWillUnmount = function() {
+  this[_timeouts] && this[_timeouts].forEach(function(id) {
+    GLOBAL.clearTimeout(id);
+  });
+  this[_timeouts] = null;
+  this[_intervals] && this[_intervals].forEach(function(id) {
+    GLOBAL.clearInterval(id);
+  });
+  this[_intervals] = null;
+  this[_immediates] && this[_immediates].forEach(function(id) {
+    GLOBAL.clearImmediate(id);
+  });
+  this[_immediates] = null;
+  this[_rafs] && this[_rafs].forEach(function(id) {
+    GLOBAL.cancelAnimationFrame(id);
+  });
+  this[_rafs] = null;
+};
 
 
 module.exports = TimerMixin;
 
 module.exports.Timer = function (Component) {
   class TimerComponent extends Component {
-    //note within your own componentWillUnmount method you will need to call super()
+    constructor(...args) {
+      super(...args);
+
+      /*
+       Overloading the constructors `componentWillUnmount` method to ensure that computations are stopped and a
+       forceUpdate prevented, without overwriting the prototype. This is a potential bug, as of React 14.7 the
+       componentWillUnmount() method does not fire, if the top level component has one. It gets overwritten. This
+       implementation is however similar to what a transpiler would do anyway.
+       GitHub Issue: https://github.com/facebook/react/issues/6162
+       */
+      if (!this.constructor.prototype._extendsTimerMixin) {
+        this.constructor.prototype._extendsTimerMixin = true;
+        let superComponentWillUnmount = this.constructor.prototype.componentWillUnmount;
+
+        this.constructor.prototype.componentWillUnmount = function (...args) {
+          superComponentWillUnmount.call(this, ...args);
+          componentWillUnmount.call(this);
+        };
+      }
+    }
   }
 
   Object.assign(TimerComponent.prototype, TimerMixin);
